@@ -30,7 +30,7 @@ type DatagramId = string;
 
 export function createClient(opts: {
     relayUrl: string;
-    secretSignKey: Uint8Array<ArrayBufferLike>;
+    secretSignKey: Uint8Array;
     secretBoxKey: Uint8Array;
     sessions: LocalStorage<UserId, KeySession>;
     keyExchange: LocalStorage<string, Crypto.KeyPair>;
@@ -44,7 +44,7 @@ class FreeSignalClient extends FreeSignalAPI {
 
     public constructor(opts: {
         relayUrl: string;
-        secretSignKey: Uint8Array<ArrayBufferLike>;
+        secretSignKey: Uint8Array;
         secretBoxKey: Uint8Array;
         sessions: LocalStorage<UserId, KeySession>;
         keyExchange: LocalStorage<string, Crypto.KeyPair>;
@@ -61,7 +61,7 @@ class FreeSignalClient extends FreeSignalAPI {
                 authorization: this.createToken(publicKey instanceof Uint8Array ? publicKey : decodeBase64(publicKey))
             }
         })
-        return this.unpackDatagrams(await this.decryptData(await res.bytes(), FreeSignalClient.getUserId(publicKey)));
+        return this.unpackDatagrams(await this.decryptData(new Uint8Array(await res.arrayBuffer()), FreeSignalClient.getUserId(publicKey)));
     }
 
     public async postDatagrams(datagrams: Datagram[], publicKey: string | Uint8Array, url?: string): Promise<number> {
@@ -74,7 +74,7 @@ class FreeSignalClient extends FreeSignalAPI {
             },
             body: data.encode() as any
         });
-        return numberFromUint8Array(await this.decryptData(await res.bytes(), FreeSignalClient.getUserId(publicKey)));
+        return numberFromUint8Array(await this.decryptData(new Uint8Array(await res.arrayBuffer()), FreeSignalClient.getUserId(publicKey)));
     }
 
     public async deleteDatagrams(datagramIds: DatagramId[], publicKey: string | Uint8Array, url?: string): Promise<number> {
@@ -87,6 +87,6 @@ class FreeSignalClient extends FreeSignalAPI {
             },
             body: data.encode() as any
         });
-        return numberFromUint8Array(await this.decryptData(await res.bytes(), FreeSignalClient.getUserId(publicKey)));
+        return numberFromUint8Array(await this.decryptData(new Uint8Array(await res.arrayBuffer()), FreeSignalClient.getUserId(publicKey)));
     }
 }
